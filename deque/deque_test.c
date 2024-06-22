@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 void deque_test(void) {
-    deque_uint *q = deque_new(uint);
+    deque_uint *q = deque_new(q);
     deque_push_back(q, 1);
     deque_push_back(q, 2);
     deque_push_back(q, 3);

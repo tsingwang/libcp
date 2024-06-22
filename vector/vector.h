@@ -15,7 +15,7 @@
         T *data;              \
     } vector_##name
 
-#define vector_new(name) calloc(1, sizeof(vector_##name))
+#define vector_new(v) calloc(1, sizeof(*v))
 
 #define vector_free(v)     \
     do {                   \

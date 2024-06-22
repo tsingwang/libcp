@@ -1,4 +1,4 @@
-all: sds-test vector-test deque-test
+all: sds-test vector-test deque-test heap-test
 
 sds-test: sds
 	$(CC) -o sds-test sds/sds_test.c sds/sds.c -Wall -std=c11 -pedantic -O2
@@ -9,5 +9,8 @@ vector-test: vector
 deque-test: deque
 	$(CC) -o deque-test deque/deque_test.c -Wall -std=c11 -pedantic -O2
 
+heap-test: heap
+	$(CC) -o heap-test heap/heap_test.c -Wall -std=c11 -pedantic -O2
+
 clean:
-	rm -f sds-test vector-test deque-test
+	rm -f sds-test vector-test deque-test heap-test

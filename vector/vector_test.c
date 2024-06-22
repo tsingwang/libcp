@@ -4,11 +4,11 @@
 #include <stdio.h>
 
 static int cmp(const void *a, const void *b) {
-   return ( *(int*)a - *(int*)b );
+    return ( *(int*)a - *(int*)b );
 }
 
 void vector_test(void) {
-    vector_uint *v = vector_new(uint);
+    vector_uint *v = vector_new(v);
     vector_push_back(v, 3);
     vector_push_back(v, 1);
     vector_push_back(v, 2);

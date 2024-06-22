@@ -3,7 +3,6 @@
 
 #include <assert.h>
 #include <stddef.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -17,7 +16,7 @@
         T *data;             \
     } deque_##name
 
-#define deque_new(name) calloc(1, sizeof(deque_##name))
+#define deque_new(v) calloc(1, sizeof(*v))
 
 #define deque_free(q)      \
     do {                   \
@@ -48,7 +47,7 @@
         if ((q)->tail < (q)->head) {                                           \
             int _bytes = ((q)->capacity - (q)->head) * deque_type_bytes(q);    \
             memcpy(_dst, (q)->data + (q)->head, _bytes);                       \
-            memcpy((uint8_t *)_dst + _bytes, (q)->data, (q)->tail * deque_type_bytes(q)); \
+            memcpy((char *)_dst + _bytes, (q)->data, (q)->tail * deque_type_bytes(q)); \
         } else if ((q)->tail < (q)->head) {                                    \
             memcpy(_dst, (q)->data + (q)->head,                                \
                 ((q)->tail - (q)->head) * deque_type_bytes(q));                \
