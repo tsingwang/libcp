@@ -102,7 +102,7 @@ deque_def(unsigned int, uint);
 deque_def(long long, long);
 deque_def(unsigned long long, ulong);
 deque_def(double, double);
-deque_def(const char *, str);
+deque_def(char *, str);
 deque_def(void *, ptr);
 
 #endif

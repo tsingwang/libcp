@@ -88,7 +88,7 @@ vector_def(unsigned int, uint);
 vector_def(long long, long);
 vector_def(unsigned long long, ulong);
 vector_def(double, double);
-vector_def(const char *, str);
+vector_def(char *, str);
 vector_def(void *, ptr);
 
 #endif

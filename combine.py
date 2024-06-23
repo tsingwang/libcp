@@ -12,11 +12,13 @@ def combine(sourcefile):
     for h_line in h_lines:
         header = h_line.split('"')[1]
         h_filename = filepath.parent / header
-        c_filename = filepath.parent / (header[:-1] + 'c')
         if not h_filename.exists():
-            print(f"{h_filename} not existed.")
-            continue
+            h_filename = Path('/usr/local/include') / header
+            if not h_filename.exists():
+                print(f"{h_filename} not found")
+                continue
 
+        c_filename = h_filename.with_suffix('.c')
         if c_filename.exists():
             with open(c_filename, 'r') as f:
                 c_code = f.read()

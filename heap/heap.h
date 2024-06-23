@@ -90,7 +90,7 @@ heap_def(unsigned int, uint);
 heap_def(long long, long);
 heap_def(unsigned long long, ulong);
 heap_def(double, double);
-heap_def(const char *, str);
+heap_def(char *, str);
 heap_def(void *, ptr);
 
 #endif
