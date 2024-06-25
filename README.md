@@ -5,6 +5,7 @@ A C library containing data structures and algorithms, especially for Competitiv
 Here are some implementation inspiration:
 - https://github.com/redis/redis
 - https://github.com/tezc/sc
+- https://github.com/KaisenAmin/c_std
 
 ### Usage
 
@@ -23,10 +24,11 @@ combine your_code.c
 ### Library list
 
 - **sds**: A simplification of Redis SDS
-- **vector**: dynamic array
-- **deque**: double-ended queue
-- **heap**: binary heap, for priority_queue
+- **vector**: dynamic array, can be used as `stack`
+- **deque**: double-ended queue, can be used as `queque`
+- **heap**: binary heap, for `priority_queue`
+- **bitset**
 
-### Failed attempt
+### No implementation
 
-- **list**: doubly-linked list, it can be replaced by deque.
+- **list**: doubly-linked list, it can be replaced by deque

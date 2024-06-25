@@ -1,43 +1,48 @@
-PREFIX = /usr/local
-BUILD_DIR = build
+BUILD_DIR := build
 
-CFLAGS = -std=c11 -Wall -pedantic -O2
+CFLAGS := -std=c11 -Wall -pedantic -O2
 
-HEADERS = $(shell find . -name '*.h')
-SOURCES = sds/sds.c
-
-test: test-sds test-vector test-deque test-heap
+test: test-sds test-vector test-deque test-heap test-bitset
 
 test-sds: sds
-	@mkdir -p $(BUILD_DIR)
-	$(CC) -o $(BUILD_DIR)/sds-test sds/sds_test.c sds/sds.c $(CFLAGS)
-	./$(BUILD_DIR)/sds-test
+	$(MAKE) -C sds
 
 test-vector: vector
-	@mkdir -p $(BUILD_DIR)
-	$(CC) -o $(BUILD_DIR)/vector-test vector/vector_test.c $(CFLAGS)
-	./$(BUILD_DIR)/vector-test
+	$(MAKE) -C vector
 
 test-deque: deque
-	@mkdir -p $(BUILD_DIR)
-	$(CC) -o $(BUILD_DIR)/deque-test deque/deque_test.c $(CFLAGS)
-	./$(BUILD_DIR)/deque-test
+	$(MAKE) -C deque
 
 test-heap: heap
-	@mkdir -p $(BUILD_DIR)
-	$(CC) -o $(BUILD_DIR)/heap-test heap/heap_test.c $(CFLAGS)
-	./$(BUILD_DIR)/heap-test
+	$(MAKE) -C heap
+
+test-bitset: bitset
+	$(MAKE) -C bitset
+
+clean:
+	$(MAKE) clean -C sds
+	$(MAKE) clean -C vector
+	$(MAKE) clean -C deque
+	$(MAKE) clean -C heap
+	$(MAKE) clean -C bitset
+	rm -r $(BUILD_DIR)
+
+
+PREFIX := /usr/local
+HEADERS := $(shell find . -name '*.h')
+SOURCES := sds/sds.c bitset/bitset.c
 
 $(BUILD_DIR)/sds.o: sds/sds.c sds/sds.h
-	@mkdir $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)
 	$(CC) -o $@ -c sds/sds.c $(CFLAGS)
 
-install: $(BUILD_DIR)/sds.o
+$(BUILD_DIR)/bitset.o: bitset/bitset.c bitset/bitset.h
+	@mkdir -p $(BUILD_DIR)
+	$(CC) -o $@ -c bitset/bitset.c $(CFLAGS)
+
+install: $(BUILD_DIR)/sds.o $(BUILD_DIR)/bitset.o
 	ar rcs $(BUILD_DIR)/libcp.a $^
 	cp $(BUILD_DIR)/libcp.a $(PREFIX)/lib/
 	cp $(HEADERS) $(PREFIX)/include/
 	cp $(SOURCES) $(PREFIX)/include/
 	cp combine.py $(PREFIX)/bin/combine
-
-clean:
-	rm -r build
