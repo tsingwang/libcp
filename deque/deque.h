@@ -34,9 +34,12 @@
         free(q);                        \
     } while (0)
 
+/* An element space needs to be wasted, can't use capacity and size compare */
+#define _deque_isfull(q) ((q)->tail+1 >= (q)->capacity ? (q)->head == 0 : (q)->tail+1 == (q)->head)
+
 #define deque_expand(q)                                                        \
     do {                                                                       \
-        if (deque_capacity(q) > deque_size(q)) break;                          \
+        if (!_deque_isfull(q)) break;                                          \
         size_t _cap = (q)->capacity == 0 ? DEQUE_INIT_CAPACITY : (q)->capacity * 2; \
         void *_dst = malloc(_cap * deque_type_bytes(q));                       \
         if (_dst == NULL) exit(1);                                             \
