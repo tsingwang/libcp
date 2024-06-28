@@ -2,7 +2,7 @@ BUILD_DIR := build
 
 CFLAGS := -std=c11 -Wall -pedantic -O2
 
-test: test-sds test-vector test-deque test-heap test-bitset
+test: test-sds test-vector test-deque test-heap test-dict test-bitset
 
 test-sds: sds
 	$(MAKE) -C sds
@@ -16,6 +16,9 @@ test-deque: deque
 test-heap: heap
 	$(MAKE) -C heap
 
+test-dict: dict
+	$(MAKE) -C dict
+
 test-bitset: bitset
 	$(MAKE) -C bitset
 
@@ -24,6 +27,7 @@ clean:
 	$(MAKE) clean -C vector
 	$(MAKE) clean -C deque
 	$(MAKE) clean -C heap
+	$(MAKE) clean -C dict
 	$(MAKE) clean -C bitset
 	rm -r $(BUILD_DIR)
 

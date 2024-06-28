@@ -27,6 +27,7 @@ combine your_code.c
 - **vector**: dynamic array, can be used as `stack`
 - **deque**: double-ended queue, can be used as `queque`
 - **heap**: binary heap, for `priority_queue`
+- **dict**: open addressing hash table, for `unordered_set` and `unordered_map`
 - **bitset**
 
 ### No implementation
