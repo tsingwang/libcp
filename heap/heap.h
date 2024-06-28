@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define HEAP_INIT_CAPACITY 16
+#define HEAP_INIT_CAPACITY 8
 
 #define heap_def(T, name)   \
     typedef struct {        \
@@ -17,23 +17,21 @@
         T *data;            \
     } heap_##name
 
-#define heap_new(v, cmp) calloc(1, sizeof(*v)); v->compare = cmp
+#define heap_type_bytes(v) sizeof(*((v)->data))
+#define heap_empty(v) ((v)->size == 0)
+#define heap_size(v) ((v)->size)
+#define heap_capacity(v) ((v)->capacity)
+
+#define heap_back(v) ((v)->data[(v)->size-1])
+#define heap_top(v) ((v)->data[0])
+
+#define heap_new(v, cmp) calloc(1, sizeof(*(v))); v->compare = cmp
 
 #define heap_free(v)       \
     do {                   \
         free((v)->data);   \
         free(v);           \
     } while (0)
-
-#define heap_type_bytes(v) sizeof(*((v)->data))
-
-#define heap_empty(v) ((v)->size == 0)
-
-#define heap_size(v) ((v)->size)
-
-#define heap_back(v) ((v)->data[(v)->size-1])
-
-#define heap_top(v) ((v)->data[0])
 
 #define heap_expand(v)                                                \
     do {                                                              \
@@ -84,11 +82,11 @@
         }                                                   \
     } while (0)
 
-//        (type, name)
+//      (type, name)
 heap_def(int, int);
 heap_def(unsigned int, uint);
-heap_def(long long, long);
-heap_def(unsigned long long, ulong);
+heap_def(long long, ll);
+heap_def(unsigned long long, ull);
 heap_def(double, double);
 heap_def(char *, str);
 heap_def(void *, ptr);

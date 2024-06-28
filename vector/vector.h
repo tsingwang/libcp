@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define VECTOR_INIT_CAPACITY 16
+#define VECTOR_INIT_CAPACITY 8
 
 #define vector_def(T, name)   \
     typedef struct {          \
@@ -15,21 +15,20 @@
         T *data;              \
     } vector_##name
 
-#define vector_new(v) calloc(1, sizeof(*v))
+#define vector_type_bytes(v) sizeof(*((v)->data))
+#define vector_empty(v) ((v)->size == 0)
+#define vector_size(v) ((v)->size)
+#define vector_capacity(v) ((v)->capacity)
+
+#define vector_back(v) ((v)->data[(v)->size-1])
+
+#define vector_new(v) calloc(1, sizeof(*(v)))
 
 #define vector_free(v)     \
     do {                   \
         free((v)->data);   \
         free(v);           \
     } while (0)
-
-#define vector_type_bytes(v) sizeof(*((v)->data))
-
-#define vector_empty(v) ((v)->size == 0)
-
-#define vector_size(v) ((v)->size)
-
-#define vector_back(v) ((v)->data[(v)->size-1])
 
 #define vector_expand(v)                                              \
     do {                                                              \
@@ -85,8 +84,8 @@
 //        (type, name)
 vector_def(int, int);
 vector_def(unsigned int, uint);
-vector_def(long long, long);
-vector_def(unsigned long long, ulong);
+vector_def(long long, ll);
+vector_def(unsigned long long, ull);
 vector_def(double, double);
 vector_def(char *, str);
 vector_def(void *, ptr);

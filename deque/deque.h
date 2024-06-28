@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DEQUE_INIT_CAPACITY 16
+#define DEQUE_INIT_CAPACITY 8
 
 #define deque_def(T, name)   \
     typedef struct {         \
@@ -16,7 +16,16 @@
         T *data;             \
     } deque_##name
 
-#define deque_new(v) calloc(1, sizeof(*v))
+#define deque_type_bytes(q) sizeof(*((q)->data))
+#define deque_empty(q) ((q)->head == (q)->tail)
+#define deque_size(q) (((q)->tail >= (q)->head) ? (q)->tail - (q)->head : \
+        (q)->capacity - (q)->head + (q)->tail)
+#define deque_capacity(q) ((q)->capacity)
+
+#define deque_front(q) ((q)->data[(q)->head])
+#define deque_back(q) ((q)->tail > 0 ? (q)->data[(q)->tail-1] : (q)->data[(q)->capacity-1])
+
+#define deque_new(q) calloc(1, sizeof(*(q)))
 
 #define deque_free(q)      \
     do {                   \
@@ -24,23 +33,9 @@
         free(q);           \
     } while (0)
 
-#define deque_type_bytes(q) sizeof(*((q)->data))
-
-#define deque_empty(q) ((q)->head == (q)->tail)
-
-#define deque_size(q) (((q)->tail >= (q)->head) ? (q)->tail - (q)->head : \
-        (q)->capacity - (q)->head + (q)->tail)
-
-#define deque_front(q) ((q)->data[(q)->head])
-
-#define deque_back(q) ((q)->tail > 0 ? (q)->data[(q)->tail-1] : (q)->data[(q)->capacity-1])
-
-/* There is an element space that needs to be wasted */
-#define deque_isfull(q) ((q)->tail+1 >= (q)->capacity ? (q)->head == 0 : (q)->tail+1 == (q)->head)
-
 #define deque_expand(q)                                                        \
     do {                                                                       \
-        if (!deque_isfull(q)) break;                                           \
+        if (deque_capacity(q) > deque_size(q)) break;                          \
         size_t _cap = (q)->capacity == 0 ? DEQUE_INIT_CAPACITY : (q)->capacity * 2; \
         void *_dst = malloc(_cap * deque_type_bytes(q));                       \
         if (_dst == NULL) exit(1);                                             \
@@ -96,13 +91,13 @@
         (q)->tail = 0;  \
     } while (0)
 
-//        (type, name)
+//       (type, name)
 deque_def(int, int);
 deque_def(unsigned int, uint);
-deque_def(long long, long);
-deque_def(unsigned long long, ulong);
+deque_def(long long, ll);
+deque_def(unsigned long long, ull);
 deque_def(double, double);
-deque_def(char *, str);
-deque_def(void *, ptr);
+deque_def(char*, str);
+deque_def(void*, ptr);
 
 #endif
