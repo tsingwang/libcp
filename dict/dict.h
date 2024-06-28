@@ -61,9 +61,10 @@ enum dict_mem_t { DICT_MEM_ALLOC, DICT_MEM_FREE, DICT_MEM_NOFREE, DICT_MEM_STATI
 
 #define dict_new(d, dt, kt, vt)     \
     calloc(1, sizeof(*(d)));        \
-    d->dict_type = dt;              \
-    d->key_type = kt;               \
-    d->val_type = vt
+    (d)->dict_type = dt;            \
+    (d)->key_type = kt;             \
+    (d)->val_type = vt;             \
+    assert((d)->val_type != DICT_MEM_ALLOC)
 
 #define dict_free(d)                                                \
     do {                                                            \
@@ -80,13 +81,13 @@ enum dict_mem_t { DICT_MEM_ALLOC, DICT_MEM_FREE, DICT_MEM_NOFREE, DICT_MEM_STATI
                 }                                                   \
             }                                                       \
             free((d)->keys[0] - 1);                                 \
-            free((d)->values[0] - 1);                               \
+            if (dict_is_hashmap(d)) free((d)->values[0] - 1);       \
             if (!dict_key_is_static(d)) free((d)->hashes[0] - 1);   \
         }                                                           \
         free(d);                                                    \
     } while (0)
 
-#define _dict_find(d, i, key, key_hash)     \
+#define _dict_find(d, i, key, key_hash)                                 \
     if (key) {                                                          \
         (d)->cursor = key_hash % ((d)->capacity[i] - 1);                \
         while (true) {                                                  \
@@ -216,14 +217,15 @@ enum dict_mem_t { DICT_MEM_ALLOC, DICT_MEM_FREE, DICT_MEM_NOFREE, DICT_MEM_STATI
             break;                                                  \
         }                                                           \
         /* Or fake delete: place a tombstone in the entry */        \
-        uint32_t prev = (d)->cursor;                                \
-        uint32_t cur = (d)->cursor;                                 \
+        int prev = (d)->cursor;                                     \
+        int cur = (d)->cursor;                                      \
         while (true) {                                              \
-            cur = (cur + 1) % ((d)->capacity[0] - 1);               \
+            cur++;                                                  \
+            if (cur == (d)->capacity[0]) cur = 0;                   \
             if ((d)->keys[0][cur] == 0) break;                      \
             if ((d)->hashes[0]) _hash = (d)->hashes[0][cur];        \
             else _hash = hash_function((d)->keys[0][cur]);          \
-            uint32_t p = _hash % ((d)->capacity[0] - 1);            \
+            int p = _hash % ((d)->capacity[0] - 1);                 \
             if ((cur > prev && p <= prev) || (p > cur && p <= prev)) {          \
                 (d)->keys[0][prev] = (d)->keys[0][cur];                         \
                 if ((d)->values[0]) (d)->values[0][prev] = (d)->values[0][cur]; \

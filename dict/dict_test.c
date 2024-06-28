@@ -58,7 +58,7 @@ void dict_test_2(void) {
 }
 
 void dict_test_3(void) {
-    dict_sint *d = dict_new(d, DICT_HASH_MAP, DICT_MEM_ALLOC, DICT_MEM_STATIC);
+    dict_sint *d = dict_new(d, DICT_HASH_SET, DICT_MEM_ALLOC, DICT_MEM_STATIC);
     dict_set_key(d, "ab");
     dict_set_key(d, "cd");
     dict_find(d, "abc");
@@ -68,6 +68,7 @@ void dict_test_3(void) {
     dict_delete(d, "cd");
     dict_find(d, "cd");
     test_cond("dict", !dict_found(d));
+    test_cond("dict", dict_size(d) == 1);
     dict_free(d);
 }
 
