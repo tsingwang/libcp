@@ -27,10 +27,11 @@
 
 #define heap_new(v, cmp) calloc(1, sizeof(*(v))); v->compare = cmp
 
-#define heap_free(v)       \
-    do {                   \
-        free((v)->data);   \
-        free(v);           \
+#define heap_free(v)                    \
+    do {                                \
+        if ((v) == NULL) return;        \
+        if ((v)->data) free((v)->data); \
+        free(v);                        \
     } while (0)
 
 #define heap_expand(v)                                                \

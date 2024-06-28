@@ -27,10 +27,11 @@
 
 #define deque_new(q) calloc(1, sizeof(*(q)))
 
-#define deque_free(q)      \
-    do {                   \
-        free((q)->data);   \
-        free(q);           \
+#define deque_free(q)                   \
+    do {                                \
+        if ((q) == NULL) return;        \
+        if ((q)->data) free((q)->data); \
+        free(q);                        \
     } while (0)
 
 #define deque_expand(q)                                                        \
@@ -50,7 +51,7 @@
         (q)->head = 0;                                                         \
         (q)->tail = (q)->capacity == 0 ? 0 : (q)->capacity - 1;                \
         (q)->capacity = _cap;                                                  \
-        free((q)->data);                                                       \
+        if ((q)->data) free((q)->data);                                        \
         (q)->data = _dst;                                                      \
     } while (0)
 
