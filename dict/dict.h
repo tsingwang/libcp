@@ -89,7 +89,7 @@ enum dict_mem_t { DICT_MEM_ALLOC, DICT_MEM_FREE, DICT_MEM_NOFREE, DICT_MEM_STATI
 
 #define _dict_find(d, i, key, key_hash)                                 \
     if (key) {                                                          \
-        (d)->cursor = key_hash % ((d)->capacity[i] - 1);                \
+        (d)->cursor = key_hash & ((d)->capacity[i] - 1);                \
         while (true) {                                                  \
             if ((d)->keys[i][(d)->cursor] == 0) {                       \
                 break;                                                  \
@@ -220,12 +220,11 @@ enum dict_mem_t { DICT_MEM_ALLOC, DICT_MEM_FREE, DICT_MEM_NOFREE, DICT_MEM_STATI
         int prev = (d)->cursor;                                     \
         int cur = (d)->cursor;                                      \
         while (true) {                                              \
-            cur++;                                                  \
-            if (cur == (d)->capacity[0]) cur = 0;                   \
+            cur = (cur + 1) & ((d)->capacity[0] - 1);               \
             if ((d)->keys[0][cur] == 0) break;                      \
             if ((d)->hashes[0]) _hash = (d)->hashes[0][cur];        \
             else _hash = hash_function((d)->keys[0][cur]);          \
-            int p = _hash % ((d)->capacity[0] - 1);                 \
+            int p = _hash & ((d)->capacity[0] - 1);                 \
             if ((cur > prev && p <= prev) || (p > cur && p <= prev)) {          \
                 (d)->keys[0][prev] = (d)->keys[0][cur];                         \
                 if ((d)->values[0]) (d)->values[0][prev] = (d)->values[0][cur]; \
