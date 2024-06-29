@@ -14,7 +14,7 @@
 #pragma GCC diagnostic ignored "-Waddress"
 #pragma GCC diagnostic ignored "-Wnonnull"
 
-#define DICT_INIT_CAPACITY 8
+#define DICT_INIT_EXP 3
 #define DICT_MAX_LOAD_FACTOR 0.75
 
 enum dict_t { DICT_HASH_MAP, DICT_HASH_SET };
@@ -26,8 +26,8 @@ enum dict_mem_t { DICT_MEM_ALLOC, DICT_MEM_FREE, DICT_MEM_NOFREE, DICT_MEM_STATI
  */
 #define dict_def(name, K, V)            \
     typedef struct {                    \
-        size_t capacity[2];             \
         size_t size;                    \
+        char exp[2]; /* exponent of capacity */\
         bool zero_occupied;             \
         enum dict_t dict_type:1;        \
         enum dict_mem_t key_type:2;     \
@@ -57,13 +57,17 @@ enum dict_mem_t { DICT_MEM_ALLOC, DICT_MEM_FREE, DICT_MEM_NOFREE, DICT_MEM_STATI
 #define dict_val_type_bytes(d) sizeof(*((d)->values[0]))
 #define dict_empty(d) ((d)->size == 0)
 #define dict_size(d) ((d)->size)
-#define dict_capacity(d) ((d)->capacity[0])
+#define dict_capacity(d) ((d)->exp[0] == -1 ? 0 : (size_t)1<<((d)->exp[0]))
+#define dict_i_cap(d, i) ((d)->exp[(i)] == -1 ? 0 : (size_t)1<<((d)->exp[(i)]))
+#define dict_i_mask(d, i) ((d)->exp[(i)] == -1 ? 0 : dict_i_cap(d, i) - 1)
 
 #define dict_new(d, dt, kt, vt)     \
     calloc(1, sizeof(*(d)));        \
     (d)->dict_type = dt;            \
     (d)->key_type = kt;             \
     (d)->val_type = vt;             \
+    (d)->exp[0] = -1;               \
+    (d)->exp[1] = -1;               \
     assert((d)->val_type != DICT_MEM_ALLOC)
 
 #define dict_free(d)                                                \
@@ -89,7 +93,7 @@ enum dict_mem_t { DICT_MEM_ALLOC, DICT_MEM_FREE, DICT_MEM_NOFREE, DICT_MEM_STATI
 
 #define _dict_find(d, i, key, key_hash)                                 \
     if (key) {                                                          \
-        (d)->cursor = key_hash & ((d)->capacity[i] - 1);                \
+        (d)->cursor = key_hash & dict_i_mask(d, i);                     \
         while (true) {                                                  \
             if ((d)->keys[i][(d)->cursor] == 0) {                       \
                 break;                                                  \
@@ -102,7 +106,7 @@ enum dict_mem_t { DICT_MEM_ALLOC, DICT_MEM_FREE, DICT_MEM_NOFREE, DICT_MEM_STATI
                         && strcmp((d)->keys[i][(d)->cursor], key) == 0) {\
                 break;                                                  \
             }                                                           \
-            (d)->cursor = ((d)->cursor + 1) & ((d)->capacity[i] - 1);   \
+            (d)->cursor = ((d)->cursor + 1) & dict_i_mask(d, i);        \
         }                                                               \
     } else {                                                            \
         (d)->cursor = -1;                                               \
@@ -110,18 +114,18 @@ enum dict_mem_t { DICT_MEM_ALLOC, DICT_MEM_FREE, DICT_MEM_NOFREE, DICT_MEM_STATI
 
 #define dict_expand(d)                                                      \
     do {                                                                    \
-        if ((d)->size + 1 < (d)->capacity[0] * DICT_MAX_LOAD_FACTOR) break; \
-        (d)->capacity[1] = (d)->capacity[0] == 0 ? DICT_INIT_CAPACITY : (d)->capacity[0] * 2; \
-        (d)->keys[1] = calloc(1 + (d)->capacity[1], dict_key_type_bytes(d));\
+        if ((d)->size + 1 < dict_i_cap(d, 0) * DICT_MAX_LOAD_FACTOR) break; \
+        (d)->exp[1] = (d)->exp[0] <= 0 ? DICT_INIT_EXP : (d)->exp[0] + 1;   \
+        (d)->keys[1] = calloc(1 + dict_i_cap(d, 1), dict_key_type_bytes(d));\
         if ((d)->keys[1] == NULL) exit(1);                                  \
         (d)->keys[1] = (d)->keys[1] + 1;                                    \
         if (dict_is_hashmap(d)) {                                           \
-            (d)->values[1] = calloc(1 + (d)->capacity[1], dict_val_type_bytes(d));  \
+            (d)->values[1] = calloc(1 + dict_i_cap(d, 1), dict_val_type_bytes(d));  \
             if ((d)->values[1] == NULL) exit(1);                            \
             (d)->values[1] = (d)->values[1] + 1;                            \
         }                                                                   \
         if (!dict_key_is_static(d)) {                                       \
-            (d)->hashes[1] = calloc(1 + (d)->capacity[1], sizeof(uint32_t));\
+            (d)->hashes[1] = calloc(1 + dict_i_cap(d, 1), sizeof(uint32_t));\
             if ((d)->hashes[1] == NULL) exit(1);                            \
             (d)->hashes[1] = (d)->hashes[1] + 1;                            \
         }                                                                   \
@@ -147,7 +151,7 @@ enum dict_mem_t { DICT_MEM_ALLOC, DICT_MEM_FREE, DICT_MEM_NOFREE, DICT_MEM_STATI
         (d)->keys[0] = (d)->keys[1];                                        \
         (d)->values[0] = (d)->values[1];                                    \
         (d)->hashes[0] = (d)->hashes[1];                                    \
-        (d)->capacity[0] = (d)->capacity[1];                                \
+        (d)->exp[0] = (d)->exp[1];                                          \
         (d)->keys[1] = NULL;                                                \
         (d)->values[1] = NULL;                                              \
         (d)->hashes[1] = NULL;                                              \
@@ -220,11 +224,11 @@ enum dict_mem_t { DICT_MEM_ALLOC, DICT_MEM_FREE, DICT_MEM_NOFREE, DICT_MEM_STATI
         int prev = (d)->cursor;                                     \
         int cur = (d)->cursor;                                      \
         while (true) {                                              \
-            cur = (cur + 1) & ((d)->capacity[0] - 1);               \
+            cur = (cur + 1) & dict_i_mask(d, 0);                    \
             if ((d)->keys[0][cur] == 0) break;                      \
             if ((d)->hashes[0]) _hash = (d)->hashes[0][cur];        \
             else _hash = hash_function((d)->keys[0][cur]);          \
-            int p = _hash & ((d)->capacity[0] - 1);                 \
+            int p = _hash & dict_i_mask(d, 0);                      \
             if ((cur > prev && p <= prev) || (p > cur && p <= prev)) {          \
                 (d)->keys[0][prev] = (d)->keys[0][cur];                         \
                 if ((d)->values[0]) (d)->values[0][prev] = (d)->values[0][cur]; \
