@@ -4,6 +4,7 @@ A C library containing data structures and algorithms, especially for Competitiv
 
 Here are some implementation inspiration:
 - https://github.com/redis/redis
+- https://github.com/fragglet/c-algorithms
 - https://github.com/tezc/sc
 - https://github.com/KaisenAmin/c_std
 
@@ -33,3 +34,4 @@ combine your_code.c
 ### No implementation
 
 - **list**: doubly-linked list, it can be replaced by deque
+- **rbtree**: red-black tree, powerful performance, but implementation is a bit complex

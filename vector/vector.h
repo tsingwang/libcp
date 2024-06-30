@@ -82,13 +82,16 @@
 #define vector_sort(v, cmp)   \
     (qsort((v)->data, (v)->size, vector_type_bytes(v), cmp))
 
+#define vector_bsearch(v, key, cmp) \
+    (bsearch(key, (v)->data, (v)->size, vector_type_bytes(v), cmp))
+
 //        (type, name)
 vector_def(int, int);
 vector_def(unsigned int, uint);
 vector_def(long long, ll);
 vector_def(unsigned long long, ull);
 vector_def(double, double);
-vector_def(char *, str);
-vector_def(void *, ptr);
+vector_def(char*, str); /* memory management by yourself */
+vector_def(void*, ptr);
 
 #endif

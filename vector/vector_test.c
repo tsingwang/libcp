@@ -34,6 +34,13 @@ void vector_test(void) {
     }
     printf("\n");
 
+    int key = 7;
+    int *p = vector_bsearch(v, &key, cmp);
+    test_cond("vector search", *p == 7);
+    key = 5;
+    p = vector_bsearch(v, &key, cmp);
+    test_cond("vector search", p == NULL);
+
     vector_free(v);
     test_report();
 }

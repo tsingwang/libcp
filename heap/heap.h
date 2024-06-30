@@ -89,7 +89,7 @@ heap_def(unsigned int, uint);
 heap_def(long long, ll);
 heap_def(unsigned long long, ull);
 heap_def(double, double);
-heap_def(char *, str);
-heap_def(void *, ptr);
+heap_def(char*, str); /* memory management by yourself */
+heap_def(void*, ptr);
 
 #endif
