@@ -3,8 +3,8 @@
 
 #include <stdio.h>
 
-static int cmp(const int *a, const int b) {
-    return (*a - b);
+int cmp(const int a, const int b) {
+    return (a - b);
 }
 
 void heap_test(void) {

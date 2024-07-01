@@ -12,8 +12,7 @@
     typedef struct {        \
         size_t capacity;    \
         size_t size;        \
-        /* second param not use a pointer to support heap_push macro */ \
-        int (*compare)(const T *a, const T b); \
+        int (*compare)(const T a, const T b); \
         T *data;            \
     } heap_##name
 
@@ -46,12 +45,11 @@
 
 #define heap_push(v, e)                                     \
     do {                                                    \
-        assert((v)->compare);                               \
         heap_expand(v);                                     \
         size_t i = (v)->size++;                             \
         while (i > 0) {                                     \
             size_t parent = (i - 1) / 2;                    \
-            if ((v)->compare((v)->data + parent, e) >= 0) break; \
+            if ((v)->compare((v)->data[parent], e) >= 0) break; \
             (v)->data[i] = (v)->data[parent];               \
             i = parent;                                     \
         }                                                   \
@@ -60,7 +58,6 @@
 
 #define heap_pop(v)                                         \
     do {                                                    \
-        assert((v)->compare);                               \
         assert(!heap_empty(v));                             \
         (v)->data[0] = heap_back(v);                        \
         (v)->size--;                                        \
@@ -71,11 +68,11 @@
             if (left >= heap_size(v)) break;                \
             size_t j = left;                                \
             if (right >= heap_size(v)) {                    \
-                if ((v)->compare((v)->data + left, (v)->data[right]) < 0) { \
+                if ((v)->compare((v)->data[left], (v)->data[right]) < 0) { \
                     j = right;                              \
                 }                                           \
             }                                               \
-            if ((v)->compare((v)->data + i, (v)->data[j]) >= 0) break; \
+            if ((v)->compare((v)->data[i], (v)->data[j]) >= 0) break; \
             (v)->data[(v)->size] = (v)->data[i];            \
             (v)->data[i] = (v)->data[j];                    \
             (v)->data[j] = (v)->data[(v)->size];            \
@@ -89,7 +86,7 @@ heap_def(unsigned int, uint);
 heap_def(long long, ll);
 heap_def(unsigned long long, ull);
 heap_def(double, double);
-heap_def(char*, str); /* memory management by yourself */
+heap_def(char*, str);
 heap_def(void*, ptr);
 
 #endif
