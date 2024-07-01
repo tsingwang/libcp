@@ -7,4 +7,4 @@ deque-test: $(SOURCES) $(HEADERS)
 	./deque-test
 
 clean:
-	rm -r deque-test
+	rm -f deque-test

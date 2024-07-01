@@ -7,4 +7,4 @@ bitset-test: $(SOURCES) $(HEADERS)
 	./bitset-test
 
 clean:
-	rm -r bitset-test
+	rm -f bitset-test

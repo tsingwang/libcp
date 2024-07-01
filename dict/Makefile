@@ -7,4 +7,4 @@ dict-test: $(SOURCES) $(HEADERS)
 	./dict-test
 
 clean:
-	rm -r dict-test
+	rm -f dict-test

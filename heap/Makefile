@@ -7,4 +7,4 @@ heap-test: $(SOURCES) $(HEADERS)
 	./heap-test
 
 clean:
-	rm -r heap-test
+	rm -f heap-test

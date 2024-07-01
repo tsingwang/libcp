@@ -7,4 +7,4 @@ sds-test: $(SOURCES) $(HEADERS)
 	./sds-test
 
 clean:
-	rm -r sds-test
+	rm -f sds-test

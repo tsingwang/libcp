@@ -3,8 +3,15 @@
 
 #include <stdio.h>
 
+char *strdup(const char *s) {
+    char *t = malloc(strlen(s) + 1);
+    if (t == NULL) return NULL;
+    memcpy(t, s, strlen(s) + 1);
+    return t;
+}
+
 void dict_test_0(void) {
-    dict_int *d = dict_new(d, DICT_HASH_MAP, DICT_MEM_STATIC, DICT_MEM_STATIC);
+    dict_int *d = dict_new_map(d, NULL, NULL);
     dict_expand(d);
     dict_find(d, 0);
     test_cond("dict", !dict_found(d));
@@ -25,7 +32,7 @@ void dict_test_0(void) {
 }
 
 void dict_test_1(void) {
-    dict_str *d = dict_new(d, DICT_HASH_MAP, DICT_MEM_NOFREE, DICT_MEM_NOFREE);
+    dict_str *d = dict_new_map(d, NULL, NULL);
     dict_set(d, "ab", "12");
     dict_set(d, "cd", "34");
     dict_find(d, "abc");
@@ -43,9 +50,9 @@ void dict_test_1(void) {
 }
 
 void dict_test_2(void) {
-    dict_str *d = dict_new(d, DICT_HASH_MAP, DICT_MEM_ALLOC, DICT_MEM_NOFREE);
-    dict_set(d, "ab", "12");
-    dict_set(d, "cd", "34");
+    dict_str *d = dict_new_map(d, free, free);
+    dict_set(d, strdup("ab"), strdup("12"));
+    dict_set(d, strdup("cd"), strdup("34"));
     dict_find(d, "abc");
     test_cond("dict", !dict_found(d));
     dict_find(d, "ab");
@@ -58,9 +65,9 @@ void dict_test_2(void) {
 }
 
 void dict_test_3(void) {
-    dict_sint *d = dict_new(d, DICT_HASH_SET, DICT_MEM_ALLOC, DICT_MEM_STATIC);
-    dict_set_key(d, "ab");
-    dict_set_key(d, "cd");
+    dict_sint *d = dict_new_set(d, free);
+    dict_set_key(d, strdup("ab"));
+    dict_set_key(d, strdup("cd"));
     dict_find(d, "abc");
     test_cond("dict", !dict_found(d));
     dict_find(d, "ab");

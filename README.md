@@ -3,8 +3,7 @@
 A C library containing data structures and algorithms, especially for Competitive Programming.
 
 Here are some implementation inspiration:
-- https://github.com/redis/redis
-- https://github.com/fragglet/c-algorithms
+- https://github.com/antirez/sds
 - https://github.com/tezc/sc
 - https://github.com/KaisenAmin/c_std
 
