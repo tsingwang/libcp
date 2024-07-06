@@ -6,6 +6,7 @@ Here are some implementation inspiration:
 - https://github.com/antirez/sds
 - https://github.com/tezc/sc
 - https://github.com/KaisenAmin/c_std
+- https://github.com/postgres/postgres/blob/master/src/backend/lib/rbtree.c
 
 ### Usage
 
@@ -28,9 +29,9 @@ combine your_code.c
 - **deque**: double-ended queue, can be used as `queque`
 - **heap**: binary heap, for `priority_queue`
 - **dict**: open addressing hash table, for `unordered_set` and `unordered_map`
+- **rbtree**: red-black tree, for `map`
 - **bitset**
 
 ### No implementation
 
-- **list**: doubly-linked list, it can be replaced by deque
-- **rbtree**: red-black tree, powerful performance, but implementation is a bit complex
+- **list**: doubly-linked list, fast insertion in the middle, but slow positioning

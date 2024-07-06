@@ -2,7 +2,7 @@ BUILD_DIR := build
 
 CFLAGS := -std=c11 -Wall -pedantic -O2
 
-test: test-sds test-vector test-deque test-heap test-dict test-bitset
+test: test-sds test-vector test-deque test-heap test-dict test-rbtree test-bitset
 
 test-sds: sds
 	$(MAKE) -C sds
@@ -19,6 +19,9 @@ test-heap: heap
 test-dict: dict
 	$(MAKE) -C dict
 
+test-rbtree: rbtree
+	$(MAKE) -C rbtree
+
 test-bitset: bitset
 	$(MAKE) -C bitset
 
@@ -28,8 +31,9 @@ clean:
 	$(MAKE) clean -C deque
 	$(MAKE) clean -C heap
 	$(MAKE) clean -C dict
+	$(MAKE) clean -C rbtree
 	$(MAKE) clean -C bitset
-	rm -r $(BUILD_DIR)
+	rm -rf $(BUILD_DIR)
 
 
 PREFIX := /usr/local
