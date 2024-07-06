@@ -8,10 +8,8 @@
 #include <string.h>
 #include <stdint.h>
 
+/* free expected ‘void *’ when key or value is scalar */
 #pragma GCC diagnostic ignored "-Wint-conversion"
-#pragma GCC diagnostic ignored "-Waddress"
-#pragma GCC diagnostic ignored "-Wnonnull"
-#pragma GCC diagnostic ignored "-Wstringop-overread"
 
 #define DICT_INIT_EXP 3
 #define DICT_MAX_LOAD_FACTOR 0.75
@@ -25,8 +23,9 @@ enum dict_t { DICT_HASH_SET, DICT_HASH_MAP };
         char exp[2]; /* exponent of capacity */ \
         bool zero_occupied;                     \
         enum dict_t dict_type:1;                \
-        void (*free_key_func)(void* key);       \
-        void (*free_value_func)(void* value);   \
+        int (*key_cmp_func)(const K, const K);  \
+        void (*key_free_func)(void*);           \
+        void (*value_free_func)(void*);         \
         K* keys[2];                             \
         V* values[2];                           \
         uint32_t* hashes[2];                    \
@@ -54,14 +53,15 @@ enum dict_t { DICT_HASH_SET, DICT_HASH_MAP };
 #define dict_i_cap(d, i) ((d)->exp[(i)] == -1 ? 0 : (size_t)1<<((d)->exp[(i)]))
 #define dict_i_mask(d, i) ((d)->exp[(i)] == -1 ? 0 : dict_i_cap(d, i) - 1)
 
-#define dict_new_set(d, fk)     dict_new(d, DICT_HASH_SET, fk, NULL)
-#define dict_new_map(d, fk, fv) dict_new(d, DICT_HASH_MAP, fk, fv)
+#define dict_new_set(d, cmp, fk)     dict_new(d, DICT_HASH_SET, cmp, fk, NULL)
+#define dict_new_map(d, cmp, fk, fv) dict_new(d, DICT_HASH_MAP, cmp, fk, fv)
 
-#define dict_new(d, dt, fk, fv) \
+#define dict_new(d, dt, cmp, fk, fv) \
     calloc(1, sizeof(*(d)));         \
     (d)->dict_type = dt;             \
-    (d)->free_key_func = fk;         \
-    (d)->free_value_func = fv;       \
+    (d)->key_cmp_func = cmp;         \
+    (d)->key_free_func = fk;         \
+    (d)->value_free_func = fv;       \
     (d)->exp[0] = -1;                \
     (d)->exp[1] = -1
 
@@ -69,17 +69,17 @@ enum dict_t { DICT_HASH_SET, DICT_HASH_MAP };
     do {                                                            \
         if ((d) == NULL) return;                                    \
         if ((d)->keys[0]) {                                         \
-            if ((d)->free_key_func) {                               \
+            if ((d)->key_free_func) {                               \
                 for (int i = -1; i < dict_capacity(d); i++) {       \
                     if ((d)->keys[0][i]) {                          \
-                        (d)->free_key_func((d)->keys[0][i]);        \
+                        (d)->key_free_func((d)->keys[0][i]);        \
                     }                                               \
                 }                                                   \
             }                                                       \
-            if ((d)->free_value_func) {                             \
+            if ((d)->value_free_func) {                             \
                 for (int i = -1; i < dict_capacity(d); i++) {       \
                     if ((d)->values[0][i]) {                        \
-                        (d)->free_value_func((d)->values[0][i]);    \
+                        (d)->value_free_func((d)->values[0][i]);    \
                     }                                               \
                 }                                                   \
             }                                                       \
@@ -98,11 +98,11 @@ enum dict_t { DICT_HASH_SET, DICT_HASH_MAP };
                 break;                                                  \
             }                                                           \
             if ((d)->hashes[i] == NULL) {                               \
-                if ((d)->keys[i][(d)->cursor] == key) {                 \
+                if ((d)->key_cmp_func((d)->keys[i][(d)->cursor], key) == 0) { \
                     break;                                              \
                 }                                                       \
-            } else if ((d)->hashes[i][(d)->cursor] == key_hash          \
-                    && strcmp((d)->keys[i][(d)->cursor], key) == 0) {   \
+            } else if ((d)->hashes[i][(d)->cursor] == key_hash &&       \
+                    (d)->key_cmp_func((d)->keys[i][(d)->cursor], key) == 0) {   \
                 break;                                                  \
             }                                                           \
             (d)->cursor = ((d)->cursor + 1) & dict_i_mask(d, i);        \
@@ -173,8 +173,8 @@ enum dict_t { DICT_HASH_SET, DICT_HASH_MAP };
 #define dict_set(d, key, value)                             \
     do {                                                    \
         dict_set_key(d, key);                               \
-        if ((d)->free_value_func && dict_cur_value(d)) {    \
-            (d)->free_value_func(dict_cur_value(d));        \
+        if ((d)->value_free_func && dict_cur_value(d)) {    \
+            (d)->value_free_func(dict_cur_value(d));        \
         }                                                   \
         dict_cur_value(d) = value;                          \
     } while (0)
@@ -184,14 +184,14 @@ enum dict_t { DICT_HASH_SET, DICT_HASH_MAP };
         uint32_t _hash = hash_function(key);            \
         _dict_find(d, 0, key, _hash);                   \
         if (!dict_found(d)) break;                      \
-        if ((d)->free_key_func) {                       \
-            (d)->free_key_func(dict_cur_key(d));        \
+        if ((d)->key_free_func) {                       \
+            (d)->key_free_func(dict_cur_key(d));        \
             dict_cur_key(d) = NULL;                     \
         } else {                                        \
             dict_cur_key(d) = 0;                        \
         }                                               \
-        if ((d)->free_value_func) {                     \
-            (d)->free_value_func(dict_cur_value(d));    \
+        if ((d)->value_free_func) {                     \
+            (d)->value_free_func(dict_cur_value(d));    \
             dict_cur_value(d) = NULL;                   \
         }                                               \
         (d)->size--;                                    \

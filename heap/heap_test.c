@@ -14,8 +14,17 @@ void heap_test(void) {
     heap_push(v, 5);
     heap_push(v, 2);
     heap_push(v, 4);
+    test_cond("heap", v->size == 5 && heap_top(v) == 5);
     heap_pop(v);
     test_cond("heap", v->size == 4 && heap_top(v) == 4);
+    heap_pop(v);
+    test_cond("heap", v->size == 3 && heap_top(v) == 3);
+    heap_pop(v);
+    test_cond("heap", v->size == 2 && heap_top(v) == 2);
+    heap_pop(v);
+    test_cond("heap", v->size == 1 && heap_top(v) == 1);
+    heap_pop(v);
+    test_cond("heap", v->size == 0);
 
     heap_free(v);
     test_report();

@@ -2,6 +2,7 @@
 #include "../testhelp.h"
 
 #include <stdio.h>
+#include <string.h>
 
 char *strdup(const char *s) {
     char *t = malloc(strlen(s) + 1);
@@ -10,8 +11,16 @@ char *strdup(const char *s) {
     return t;
 }
 
+int cmp(const int a, const int b) {
+    return (a - b);
+}
+
+int cmpstr(const char *a, const char *b) {
+    return strcmp(a, b);
+}
+
 void dict_test_0(void) {
-    dict_int *d = dict_new_map(d, NULL, NULL);
+    dict_int *d = dict_new_map(d, cmp, NULL, NULL);
     dict_expand(d);
     dict_find(d, 0);
     test_cond("dict", !dict_found(d));
@@ -32,7 +41,7 @@ void dict_test_0(void) {
 }
 
 void dict_test_1(void) {
-    dict_str *d = dict_new_map(d, NULL, NULL);
+    dict_str *d = dict_new_map(d, cmpstr, NULL, NULL);
     dict_set(d, "ab", "12");
     dict_set(d, "cd", "34");
     dict_find(d, "abc");
@@ -50,7 +59,7 @@ void dict_test_1(void) {
 }
 
 void dict_test_2(void) {
-    dict_str *d = dict_new_map(d, free, free);
+    dict_str *d = dict_new_map(d, cmpstr, free, free);
     dict_set(d, strdup("ab"), strdup("12"));
     dict_set(d, strdup("cd"), strdup("34"));
     dict_find(d, "abc");
@@ -65,7 +74,7 @@ void dict_test_2(void) {
 }
 
 void dict_test_3(void) {
-    dict_sint *d = dict_new_set(d, free);
+    dict_sint *d = dict_new_set(d, cmpstr, free);
     dict_set_key(d, strdup("ab"));
     dict_set_key(d, strdup("cd"));
     dict_find(d, "abc");
