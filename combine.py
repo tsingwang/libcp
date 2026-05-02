@@ -2,35 +2,53 @@
 
 from pathlib import Path
 
+
 def combine(sourcefile):
-    filepath = Path(sourcefile)
+    filepath = Path(sourcefile).resolve()
+    script_dir = Path(__file__).resolve().parent
+    expanded_headers = set()
+    expanded_sources = set()
 
-    with open(sourcefile, 'r') as f:
-        code = f.read()
+    def resolve_header(header, base_dir):
+        candidates = [
+            base_dir / header,
+            script_dir / "src" / header,
+            script_dir / "src" / "legacy" / header,
+            Path("/usr/local/include") / header,
+        ]
+        return next((candidate.resolve() for candidate in candidates if candidate.exists()), None)
 
-    h_lines = filter(lambda line: line.startswith('#include "'), code.split('\n'))
-    for h_line in h_lines:
-        header = h_line.split('"')[1]
-        h_filename = filepath.parent / header
-        if not h_filename.exists():
-            h_filename = Path('/usr/local/include') / header
-            if not h_filename.exists():
-                print(f"{h_filename} not found")
+    def expand_code(code, base_dir):
+        expanded_lines = []
+        for line in code.splitlines():
+            if not line.startswith('#include "'):
+                expanded_lines.append(line)
                 continue
 
-        c_filename = h_filename.with_suffix('.c')
-        if c_filename.exists():
-            with open(c_filename, 'r') as f:
-                c_code = f.read()
-            code = code.replace(h_line, c_code)
+            header = line.split('"')[1]
+            h_filename = resolve_header(header, base_dir)
+            if h_filename is None:
+                print(f"{header} not found")
+                continue
 
-        with open(h_filename, 'r') as f:
-            h_code = f.read()
-        code = code.replace(h_line, h_code)
+            c_filename = h_filename.with_suffix(".c")
+            if c_filename.exists() and c_filename not in expanded_sources:
+                expanded_sources.add(c_filename)
+                expanded_lines.append(expand_file(c_filename))
 
-    output_filename = sourcefile.rsplit('.', 1)[0] + '_combined.c'
-    with open(output_filename, 'w') as f:
-        f.write("/* The code used from https://github.com/tsingwang/libcp */\n");
+            if h_filename not in expanded_headers:
+                expanded_headers.add(h_filename)
+                expanded_lines.append(expand_file(h_filename))
+
+        return "\n".join(expanded_lines)
+
+    def expand_file(path):
+        with open(path, "r") as f:
+            return expand_code(f.read(), path.parent)
+
+    code = expand_file(filepath)
+    output_filename = sourcefile.rsplit(".", 1)[0] + "_combined.c"
+    with open(output_filename, "w") as f:
         f.write(code)
 
 if __name__ == '__main__':
